@@ -1,0 +1,1569 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LayoutGenome Bridge</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-primary: #0a0a0c;
+        --bg-secondary: #131418;
+        --bg-tertiary: #1c1d23;
+
+        --text-primary: #f8f9fa;
+        --text-secondary: #a1a1aa;
+        --text-muted: #71717a;
+
+        --accent-primary: #3b82f6;
+        --accent-secondary: #8b5cf6;
+        --accent-tertiary: #ec4899;
+        --accent-glow: rgba(59, 130, 246, 0.4);
+
+        --border-color: rgba(255, 255, 255, 0.1);
+        --glass-bg: rgba(255, 255, 255, 0.03);
+        --glass-border: rgba(255, 255, 255, 0.08);
+
+        --font-sans:
+          "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        --font-mono:
+          "Geist Mono", "SFMono-Regular", Consolas, "Liberation Mono", Menlo,
+          monospace;
+
+        --radius-xl: 22px;
+        --radius-md: 14px;
+        --shadow-main: 0 30px 80px rgba(0, 0, 0, 0.55);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        scrollbar-width: thin;
+        scrollbar-color: var(--accent-glow) var(--bg-primary);
+      }
+
+      html {
+        scroll-behavior: smooth;
+        scroll-padding-top: 100px;
+      }
+
+      body.dark-theme {
+        background-color: var(--bg-primary);
+        color: var(--text-primary);
+        font-family: var(--font-sans);
+        font-size: 16px;
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        min-height: 100vh;
+        overflow-x: hidden;
+        padding: 28px 16px 56px;
+      }
+
+      body.dark-theme::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: -2;
+        pointer-events: none;
+        background:
+          radial-gradient(
+            circle at 20% 0%,
+            rgba(59, 130, 246, 0.14),
+            transparent 35%
+          ),
+          radial-gradient(
+            circle at 85% 8%,
+            rgba(139, 92, 246, 0.12),
+            transparent 40%
+          ),
+          radial-gradient(
+            circle at 50% 100%,
+            rgba(236, 72, 153, 0.08),
+            transparent 42%
+          );
+      }
+
+      ::-webkit-scrollbar {
+        width: 10px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: var(--bg-primary);
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: linear-gradient(
+          to bottom,
+          var(--accent-primary),
+          var(--accent-secondary)
+        );
+        border-radius: 10px;
+        border: 3px solid var(--bg-primary);
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(
+          to bottom,
+          var(--accent-secondary),
+          var(--accent-tertiary)
+        );
+      }
+
+      .bg-effects {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: -1;
+        overflow: hidden;
+        pointer-events: none;
+      }
+
+      .glow-orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(120px);
+        opacity: 0.3;
+      }
+
+      .orb-1 {
+        top: -100px;
+        right: -100px;
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(
+          circle,
+          var(--accent-secondary),
+          transparent 70%
+        );
+      }
+
+      .orb-2 {
+        bottom: 20%;
+        left: -200px;
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(
+          circle,
+          var(--accent-primary),
+          transparent 70%
+        );
+      }
+
+      .noise-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacty='0.05'/%3E%3C/svg%3E");
+        opacity: 0.03;
+        mix-blend-mode: overlay;
+      }
+
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
+        font-weight: 700;
+        line-height: 1.2;
+        letter-spacing: -0.02em;
+      }
+
+      .text-gradient {
+        background: linear-gradient(
+          110deg,
+          #fff 20%,
+          var(--accent-primary) 50%,
+          var(--accent-secondary) 80%
+        );
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: inline-block;
+      }
+
+      .app-shell {
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 24px;
+        position: relative;
+        z-index: 1;
+        animation: shell-enter 0.8s ease both;
+      }
+
+      @keyframes shell-enter {
+        from {
+          opacity: 0;
+          transform: translateY(16px) scale(0.99);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 20px;
+        align-items: start;
+        margin-bottom: 20px;
+      }
+
+      .hero h1 {
+        margin: 0;
+        font-size: clamp(1.8rem, 3.6vw, 2.8rem);
+        line-height: 1.08;
+        letter-spacing: -0.03em;
+        background: linear-gradient(
+          90deg,
+          #fff 15%,
+          var(--accent-primary) 55%,
+          var(--accent-secondary) 100%
+        );
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .hero p {
+        margin: 10px 0 0;
+        color: var(--text-secondary);
+        max-width: 700px;
+        font-size: 1rem;
+      }
+
+      .version-chip {
+        justify-self: end;
+        border: 1px solid var(--glass-border);
+        border-radius: 999px;
+        padding: 8px 14px;
+        font-size: 0.84rem;
+        color: var(--text-secondary);
+        background: var(--glass-bg);
+        backdrop-filter: blur(6px);
+        font-family: var(--font-mono);
+      }
+
+      .step-card {
+        margin-top: 16px;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-main);
+        padding: 22px;
+        transform: translateY(10px);
+        opacity: 0;
+        animation: card-in 0.6s ease forwards;
+        animation-delay: var(--delay, 0s);
+      }
+
+      @keyframes card-in {
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      .step-card.is-locked {
+        opacity: 0.45;
+        filter: grayscale(0.15);
+      }
+
+      .step-card.is-complete {
+        border-color: rgba(59, 130, 246, 0.6);
+        box-shadow:
+          0 28px 75px rgba(0, 0, 0, 0.55),
+          inset 0 0 0 1px rgba(59, 130, 246, 0.18);
+      }
+
+      .step-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+
+      .step-number {
+        width: 34px;
+        height: 34px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--font-mono);
+        background: linear-gradient(
+          145deg,
+          var(--accent-primary),
+          var(--accent-secondary)
+        );
+        color: #ffffff;
+        box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.14);
+        flex-shrink: 0;
+      }
+
+      .step-title {
+        margin: 0;
+        font-size: 1.38rem;
+        line-height: 1.2;
+        letter-spacing: -0.02em;
+        font-family: var(--font-sans);
+      }
+
+      .step-subtitle {
+        margin: 0 0 14px;
+        color: var(--text-secondary);
+        font-size: 0.94rem;
+      }
+
+      .field-row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+        align-items: center;
+      }
+
+      .field-stack {
+        display: grid;
+        gap: 12px;
+      }
+
+      .input,
+      .textarea {
+        width: 100%;
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+        outline: none;
+        padding: 14px 15px;
+        font: inherit;
+        transition:
+          border-color 0.2s ease,
+          box-shadow 0.2s ease,
+          transform 0.2s ease;
+      }
+
+      .input:focus,
+      .textarea:focus {
+        border-color: var(--accent-primary);
+        box-shadow: 0 0 0 3px var(--accent-glow);
+        transform: translateY(-1px);
+      }
+
+      .textarea {
+        min-height: 184px;
+        resize: vertical;
+        font-family: var(--font-mono);
+        font-size: 0.9rem;
+        line-height: 1.5;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        border: none;
+        white-space: nowrap;
+      }
+
+      .btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+      }
+
+      .btn:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .btn-primary {
+        background: var(--accent-primary);
+        color: #ffffff;
+      }
+
+      .btn-primary:hover:not(:disabled) {
+        background: #2563eb;
+        box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+      }
+
+      .btn-secondary {
+        background: transparent;
+        color: var(--text-primary);
+        border: 1px solid rgba(139, 92, 246, 0.4);
+      }
+
+      .btn-secondary:hover:not(:disabled) {
+        background: rgba(139, 92, 246, 0.12);
+        border-color: rgba(139, 92, 246, 0.7);
+      }
+
+      .btn-ghost {
+        background: transparent;
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+      }
+
+      .btn-ghost:hover:not(:disabled) {
+        background: var(--glass-bg);
+        border-color: var(--text-secondary);
+      }
+
+      .status {
+        margin-top: 12px;
+        border-radius: 11px;
+        padding: 10px 12px;
+        font-size: 0.9rem;
+        border: 1px solid var(--border-color);
+        background: var(--glass-bg);
+        color: var(--text-secondary);
+        min-height: 42px;
+        display: flex;
+        align-items: center;
+      }
+
+      .status.success {
+        border-color: rgba(16, 185, 129, 0.55);
+        color: #d1fae5;
+        background: rgba(6, 78, 59, 0.55);
+      }
+
+      .status.error {
+        border-color: rgba(239, 68, 68, 0.55);
+        color: #fecaca;
+        background: rgba(127, 29, 29, 0.55);
+      }
+
+      .status.warning {
+        border-color: rgba(245, 158, 11, 0.6);
+        color: #fef3c7;
+        background: rgba(120, 53, 15, 0.55);
+      }
+
+      .log-console {
+        margin-top: 12px;
+        border-radius: var(--radius-md);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        background: #0f172a;
+        padding: 12px;
+        max-height: 190px;
+        overflow-y: auto;
+        font-family: var(--font-mono);
+        font-size: 0.84rem;
+        line-height: 1.45;
+      }
+
+      .log-line {
+        color: #94a3b8;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        padding: 6px 0;
+        animation: line-in 0.2s ease;
+        display: flex;
+        gap: 8px;
+      }
+
+      .log-line::before {
+        content: ">";
+        color: var(--accent-primary);
+        opacity: 0.6;
+      }
+
+      .log-line:last-child {
+        border-bottom: 0;
+      }
+
+      @keyframes line-in {
+        from {
+          opacity: 0;
+          transform: translateY(-3px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .actions-row {
+        margin-top: 12px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .inline-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 11px 14px;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
+        text-decoration: none;
+        background: var(--glass-bg);
+        font-weight: 600;
+        transition:
+          transform 0.2s ease,
+          border-color 0.2s ease;
+      }
+
+      .inline-link:hover {
+        transform: translateY(-2px);
+        border-color: var(--text-secondary);
+      }
+
+      .hint-text {
+        margin: 10px 0 0;
+        color: var(--text-muted);
+        font-size: 0.86rem;
+      }
+
+      .manual-panel {
+        margin-top: 12px;
+        padding: 14px;
+        border-radius: var(--radius-md);
+        border: 1px solid rgba(245, 158, 11, 0.4);
+        background: rgba(245, 158, 11, 0.12);
+        display: grid;
+        gap: 10px;
+      }
+
+      .manual-panel h3 {
+        margin: 0;
+        font-size: 1rem;
+        font-family: var(--font-sans);
+      }
+
+      .attempt-list {
+        margin: 0;
+        padding-left: 16px;
+        color: #fcd34d;
+        font-size: 0.82rem;
+        font-family: var(--font-mono);
+        max-height: 110px;
+        overflow-y: auto;
+      }
+
+      .result-zone {
+        margin-top: 14px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-color);
+        background: var(--bg-secondary);
+        overflow: hidden;
+        display: none;
+      }
+
+      .result-zone.active {
+        display: block;
+        animation: card-in 0.5s ease;
+      }
+
+      .result-zone iframe {
+        width: 100%;
+        border: 0;
+        min-height: 430px;
+        background: #fff;
+      }
+
+      .result-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--border-color);
+        background: var(--bg-tertiary);
+      }
+
+      .result-head strong {
+        font-family: var(--font-sans);
+        font-size: 0.95rem;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      @media (max-width: 860px) {
+        .hero {
+          grid-template-columns: 1fr;
+        }
+
+        .version-chip {
+          justify-self: start;
+        }
+
+        .field-row {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 600px) {
+        body.dark-theme {
+          padding: 18px 12px 38px;
+        }
+
+        .step-card {
+          padding: 16px;
+          border-radius: 18px;
+        }
+
+        .step-title {
+          font-size: 1.06rem;
+        }
+
+        .step-header {
+          align-items: start;
+        }
+
+        .actions-row {
+          flex-direction: column;
+        }
+
+        .btn,
+        .inline-link {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body class="dark-theme">
+    <div class="bg-effects">
+      <div class="glow-orb orb-1"></div>
+      <div class="glow-orb orb-2"></div>
+      <div class="noise-overlay"></div>
+    </div>
+    <main class="app-shell">
+      <header class="hero">
+        <div>
+          <h1>LayoutGenome Bridge</h1>
+          <p>
+            Pipeline completo para validar URL, baixar replica em ZIP, enviar
+            INDEX_HTML e gerar designer_system.html com IA gratuita, mantendo
+            fallback manual sem bloquear a jornada.
+          </p>
+        </div>
+        <div class="version-chip">build v2.0.0</div>
+      </header>
+
+      <section id="step1" class="step-card" style="--delay: 0.03s">
+        <div class="step-header">
+          <span class="step-number">1</span>
+          <h2 class="step-title">Passo 1: Validar URL e processar download</h2>
+        </div>
+        <p class="step-subtitle">
+          Este passo valida a URL e ja inicia o processamento do ZIP em seguida.
+        </p>
+        <div class="field-row">
+          <input
+            class="input"
+            id="siteUrlInput"
+            type="url"
+            placeholder="https://exemplo.com"
+            autocomplete="off"
+          />
+          <button class="btn btn-primary" id="processUrlBtn" type="button">
+            Validar e processar
+          </button>
+        </div>
+        <div id="downloadStatus" class="status">
+          Informe a URL e clique em Validar e processar.
+        </div>
+        <div class="actions-row">
+          <a id="zipDownloadLink" class="inline-link hidden" href="#" download
+            >Baixar ZIP agora</a
+          >
+        </div>
+        <div id="downloadLogs" class="log-console"></div>
+      </section>
+
+      <section id="step2" class="step-card" style="--delay: 0.13s">
+        <div class="step-header">
+          <span class="step-number">2</span>
+          <h2 class="step-title">
+            Passo 2: Validar INDEX_HTML e gerar designer_system.html
+          </h2>
+        </div>
+        <p class="step-subtitle">
+          Este passo valida o HTML e ja dispara a geracao com IA no mesmo
+          clique.
+        </p>
+        <div class="field-stack">
+          <input
+            class="input"
+            id="indexFileInput"
+            type="file"
+            accept=".html,text/html"
+          />
+          <textarea
+            class="textarea"
+            id="indexHtmlInput"
+            placeholder="Cole aqui o INDEX_HTML..."
+          ></textarea>
+        </div>
+        <div class="actions-row">
+          <button
+            class="btn btn-primary"
+            id="validateAndGenerateBtn"
+            type="button"
+          >
+            Validar e gerar designer_system.html
+          </button>
+          <button
+            class="btn btn-ghost hidden"
+            id="copyDesignerBtn"
+            type="button"
+          >
+            Copiar HTML
+          </button>
+          <button
+            class="btn btn-ghost hidden"
+            id="downloadDesignerBtn"
+            type="button"
+          >
+            Baixar designer_system.html
+          </button>
+        </div>
+        <p id="indexStats" class="hint-text"></p>
+        <div id="generationStatus" class="status">
+          Informe URL + INDEX_HTML e clique para validar e gerar.
+        </div>
+
+        <div id="manualFallbackPanel" class="manual-panel hidden">
+          <h3>Fallback manual (provedor indisponivel)</h3>
+          <p class="hint-text">
+            Copie o prompt pronto, rode em um provider gratuito externo e cole o
+            HTML final no campo abaixo.
+          </p>
+          <textarea class="textarea" id="manualPromptText" readonly></textarea>
+          <div class="actions-row">
+            <button
+              class="btn btn-secondary"
+              id="copyManualPromptBtn"
+              type="button"
+            >
+              Copiar prompt
+            </button>
+          </div>
+          <ul id="providerAttempts" class="attempt-list"></ul>
+          <textarea
+            class="textarea"
+            id="manualResultInput"
+            placeholder="Cole aqui o designer_system.html retornado pela IA"
+          ></textarea>
+          <div class="actions-row">
+            <button
+              class="btn btn-primary"
+              id="applyManualResultBtn"
+              type="button"
+            >
+              Usar resultado manual
+            </button>
+          </div>
+        </div>
+
+        <div id="resultZone" class="result-zone">
+          <div class="result-head">
+            <strong>Preview do designer_system.html</strong>
+            <span id="resultSource" class="hint-text">Fonte: -</span>
+          </div>
+          <iframe id="designerPreview" title="Preview designer system"></iframe>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      (function () {
+        const BRIDGE_LAST_URL_KEY = "layoutgenome_bridge_last_url";
+
+        function loadPersistedSiteUrl() {
+          try {
+            return localStorage.getItem(BRIDGE_LAST_URL_KEY) || "";
+          } catch (storageError) {
+            console.warn("Falha ao ler URL persistida:", storageError);
+            return "";
+          }
+        }
+
+        function persistSiteUrl(siteUrl) {
+          if (!siteUrl) {
+            return;
+          }
+
+          try {
+            localStorage.setItem(BRIDGE_LAST_URL_KEY, siteUrl);
+          } catch (storageError) {
+            console.warn("Falha ao persistir URL:", storageError);
+          }
+        }
+
+        function extractSiteUrlFromIndexHtml(indexHtml) {
+          if (!indexHtml) {
+            return "";
+          }
+
+          const patterns = [
+            /<link[^>]+rel=["']canonical["'][^>]*href=["']([^"']+)["']/i,
+            /<meta[^>]+property=["']og:url["'][^>]*content=["']([^"']+)["']/i,
+            /<meta[^>]+content=["']([^"']+)["'][^>]*property=["']og:url["']/i,
+          ];
+
+          for (const pattern of patterns) {
+            const match = indexHtml.match(pattern);
+            if (match && match[1] && URL.canParse(match[1])) {
+              return match[1];
+            }
+          }
+
+          return "";
+        }
+
+        const state = {
+          siteUrl: loadPersistedSiteUrl(),
+          indexHtml: "",
+          downloadJobId: "",
+          downloadDone: false,
+          expectedZipFilename: "",
+          designerHtml: "",
+          eventSource: null,
+        };
+
+        const API_BASE_URL = (function resolveApiBaseUrl() {
+          const origin = globalThis.location.origin;
+          const host = globalThis.location.hostname;
+          const port = globalThis.location.port;
+          const liveServerPorts = new Set(["5500", "5501", "5502", "5503"]);
+
+          if (port === "5001") {
+            return origin;
+          }
+
+          if (
+            (host === "127.0.0.1" || host === "localhost") &&
+            liveServerPorts.has(port)
+          ) {
+            return "http://127.0.0.1:5001";
+          }
+
+          return origin;
+        })();
+
+        function apiUrl(path) {
+          if (!path || !path.startsWith("/")) {
+            return path;
+          }
+          return API_BASE_URL + path;
+        }
+
+        function zipFilenameFromSiteUrl(siteUrl, fallbackId) {
+          if (!siteUrl || !URL.canParse(siteUrl)) {
+            return (fallbackId || "site") + ".zip";
+          }
+
+          try {
+            const parsed = new URL(siteUrl);
+            let cleanName = parsed.hostname.replace(/^www\./i, "");
+            cleanName = cleanName.replaceAll(/[^a-zA-Z0-9.-]/g, "_");
+
+            if (parsed.pathname && parsed.pathname !== "/") {
+              const pathPart = parsed.pathname
+                .split("/")
+                .filter(Boolean)
+                .join("_")
+                .replaceAll(/[^a-zA-Z0-9]/g, "_")
+                .slice(0, 30);
+
+              if (pathPart) {
+                cleanName = cleanName + "_" + pathPart;
+              }
+            }
+
+            return (cleanName || fallbackId || "site") + ".zip";
+          } catch (parseError) {
+            console.warn("Falha ao montar nome do ZIP:", parseError);
+            return (fallbackId || "site") + ".zip";
+          }
+        }
+
+        const stepEls = {
+          step1: document.getElementById("step1"),
+          step2: document.getElementById("step2"),
+        };
+
+        const els = {
+          siteUrlInput: document.getElementById("siteUrlInput"),
+          processUrlBtn: document.getElementById("processUrlBtn"),
+          zipDownloadLink: document.getElementById("zipDownloadLink"),
+          downloadStatus: document.getElementById("downloadStatus"),
+          downloadLogs: document.getElementById("downloadLogs"),
+
+          indexFileInput: document.getElementById("indexFileInput"),
+          indexHtmlInput: document.getElementById("indexHtmlInput"),
+          indexStats: document.getElementById("indexStats"),
+          validateAndGenerateBtn: document.getElementById(
+            "validateAndGenerateBtn",
+          ),
+          generationStatus: document.getElementById("generationStatus"),
+
+          copyDesignerBtn: document.getElementById("copyDesignerBtn"),
+          downloadDesignerBtn: document.getElementById("downloadDesignerBtn"),
+
+          manualFallbackPanel: document.getElementById("manualFallbackPanel"),
+          manualPromptText: document.getElementById("manualPromptText"),
+          copyManualPromptBtn: document.getElementById("copyManualPromptBtn"),
+          providerAttempts: document.getElementById("providerAttempts"),
+          manualResultInput: document.getElementById("manualResultInput"),
+          applyManualResultBtn: document.getElementById("applyManualResultBtn"),
+
+          resultZone: document.getElementById("resultZone"),
+          resultSource: document.getElementById("resultSource"),
+          designerPreview: document.getElementById("designerPreview"),
+        };
+
+        function setStatus(element, message, type) {
+          element.textContent = message;
+          element.className = "status";
+          if (type) {
+            element.classList.add(type);
+          }
+        }
+
+        if (state.siteUrl) {
+          els.siteUrlInput.value = state.siteUrl;
+        }
+
+        function setStepComplete(stepElement, complete) {
+          stepElement.classList.toggle("is-complete", complete);
+        }
+
+        function setBusy(button, busy, idleText, busyText) {
+          button.disabled = busy;
+          button.textContent = busy ? busyText : idleText;
+        }
+
+        function appendLog(message) {
+          const line = document.createElement("div");
+          line.className = "log-line";
+          line.textContent = message;
+          els.downloadLogs.appendChild(line);
+          els.downloadLogs.scrollTop = els.downloadLogs.scrollHeight;
+        }
+
+        function clearLogs() {
+          els.downloadLogs.innerHTML = "";
+        }
+
+        async function copyToClipboard(text) {
+          await navigator.clipboard.writeText(text);
+        }
+
+        function apiErrorMessage(response, fallback) {
+          return response && response.error ? response.error : fallback;
+        }
+
+        async function postJson(url, payload) {
+          const response = await fetch(apiUrl(url), {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+
+          const raw = await response.text();
+          let data = {};
+          if (raw) {
+            try {
+              data = JSON.parse(raw);
+            } catch (parseError) {
+              data = {
+                error: "Resposta invalida do servidor: " + parseError.message,
+                raw: raw,
+              };
+            }
+          }
+
+          if (!response.ok) {
+            throw new Error(apiErrorMessage(data, "Falha na requisicao."));
+          }
+
+          return data;
+        }
+
+        function closeEventSource() {
+          if (state.eventSource) {
+            state.eventSource.close();
+            state.eventSource = null;
+          }
+        }
+
+        async function pollDownloadStatus(jobId) {
+          for (let attempt = 0; attempt < 240; attempt += 1) {
+            await new Promise((resolve) => setTimeout(resolve, 2500));
+            try {
+              const response = await fetch(
+                apiUrl("/api/download-status/" + jobId),
+              );
+              if (!response.ok) {
+                continue;
+              }
+
+              const data = await response.json();
+              if (data.status === "complete") {
+                onDownloadComplete(jobId, data.filename);
+                return;
+              }
+
+              if (data.status === "error") {
+                setStatus(
+                  els.downloadStatus,
+                  data.error || "Falha no download.",
+                  "error",
+                );
+                setBusy(
+                  els.processUrlBtn,
+                  false,
+                  "Validar e processar",
+                  "Processando...",
+                );
+                return;
+              }
+            } catch (pollError) {
+              appendLog("Falha ao consultar status: " + pollError.message);
+            }
+          }
+
+          if (!state.downloadDone) {
+            setStatus(
+              els.downloadStatus,
+              "ZIP ainda processando. Aguarde mais um pouco e tente novamente.",
+              "warning",
+            );
+            setBusy(
+              els.processUrlBtn,
+              false,
+              "Validar e processar",
+              "Processando...",
+            );
+          }
+        }
+
+        function onDownloadComplete(jobId, filename) {
+          if (state.downloadDone) {
+            return;
+          }
+
+          state.downloadDone = true;
+          closeEventSource();
+
+          const resolvedFilename =
+            filename ||
+            state.expectedZipFilename ||
+            zipFilenameFromSiteUrl(state.siteUrl, jobId);
+
+          setStatus(
+            els.downloadStatus,
+            "ZIP pronto. Clique no link para baixar o arquivo.",
+            "success",
+          );
+          setStepComplete(stepEls.step1, true);
+          setBusy(
+            els.processUrlBtn,
+            false,
+            "Validar e processar",
+            "Processando...",
+          );
+
+          const href = apiUrl("/api/download-zip/" + jobId);
+          els.zipDownloadLink.href = href;
+          els.zipDownloadLink.download = resolvedFilename;
+          els.zipDownloadLink.textContent = "Baixar " + resolvedFilename;
+          els.zipDownloadLink.classList.remove("hidden");
+        }
+
+        function bindDownloadStream(jobId) {
+          closeEventSource();
+
+          const eventSource = new EventSource(
+            apiUrl("/api/download-events/" + jobId),
+          );
+          state.eventSource = eventSource;
+
+          eventSource.onmessage = function (event) {
+            appendLog(event.data);
+          };
+
+          eventSource.addEventListener("done", async function (event) {
+            if (event.data === "complete") {
+              appendLog("Download concluido. Preparando liberacao do ZIP...");
+
+              try {
+                const response = await fetch(
+                  apiUrl("/api/download-status/" + jobId),
+                );
+                if (response.ok) {
+                  const data = await response.json();
+                  onDownloadComplete(jobId, data.filename);
+                  return;
+                }
+              } catch (statusError) {
+                appendLog(
+                  "Nao foi possivel ler status final do job: " +
+                    statusError.message,
+                );
+              }
+
+              onDownloadComplete(jobId);
+              return;
+            }
+
+            setStatus(
+              els.downloadStatus,
+              "Download falhou. Verifique os logs.",
+              "error",
+            );
+            setBusy(
+              els.processUrlBtn,
+              false,
+              "Validar e processar",
+              "Processando...",
+            );
+          });
+
+          eventSource.onerror = function () {
+            appendLog(
+              "Conexao de logs interrompida. Tentando status de backup...",
+            );
+            closeEventSource();
+            pollDownloadStatus(jobId);
+          };
+        }
+
+        async function validateUrlAndStartDownload() {
+          const typedUrl = els.siteUrlInput.value.trim();
+          if (!typedUrl) {
+            setStatus(
+              els.downloadStatus,
+              "Informe uma URL antes de iniciar o processamento.",
+              "warning",
+            );
+            return;
+          }
+
+          setBusy(
+            els.processUrlBtn,
+            true,
+            "Validar e processar",
+            "Validando...",
+          );
+          setStatus(els.downloadStatus, "Validando URL no backend...", "");
+
+          clearLogs();
+          state.downloadDone = false;
+          state.expectedZipFilename = "";
+          els.zipDownloadLink.classList.add("hidden");
+          els.zipDownloadLink.href = "#";
+          els.zipDownloadLink.removeAttribute("download");
+          els.zipDownloadLink.textContent = "Baixar ZIP agora";
+
+          try {
+            const urlData = await postJson("/api/validate-url", {
+              site_url: typedUrl,
+            });
+
+            state.siteUrl = urlData.normalized_url;
+            persistSiteUrl(state.siteUrl);
+            els.siteUrlInput.value = state.siteUrl;
+            appendLog("URL validada: " + state.siteUrl);
+
+            setBusy(
+              els.processUrlBtn,
+              true,
+              "Validar e processar",
+              "Processando...",
+            );
+            setStatus(
+              els.downloadStatus,
+              "URL valida. Iniciando processamento do download...",
+              "",
+            );
+
+            const data = await postJson("/api/download-site", {
+              site_url: state.siteUrl,
+            });
+
+            state.downloadJobId = data.job_id;
+            state.expectedZipFilename =
+              data.filename ||
+              zipFilenameFromSiteUrl(state.siteUrl, data.job_id);
+
+            appendLog("Job " + data.job_id + " iniciado.");
+            bindDownloadStream(data.job_id);
+            pollDownloadStatus(data.job_id);
+          } catch (error) {
+            setStatus(els.downloadStatus, error.message, "error");
+            setBusy(
+              els.processUrlBtn,
+              false,
+              "Validar e processar",
+              "Processando...",
+            );
+            setStepComplete(stepEls.step1, false);
+          }
+        }
+
+        function readFileContent(file) {
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = function () {
+              resolve(String(reader.result || ""));
+            };
+            reader.onerror = function () {
+              reject(new Error("Nao foi possivel ler o arquivo."));
+            };
+            reader.readAsText(file, "utf-8");
+          });
+        }
+
+        async function onIndexFileSelected(event) {
+          const file = event.target.files && event.target.files[0];
+          if (!file) {
+            return;
+          }
+
+          if (file.size > 2 * 1024 * 1024) {
+            setStatus(
+              els.generationStatus,
+              "Arquivo maior que 2MB. Reduza o INDEX_HTML.",
+              "error",
+            );
+            event.target.value = "";
+            return;
+          }
+
+          try {
+            const content = await readFileContent(file);
+            els.indexHtmlInput.value = content;
+            state.indexHtml = content;
+            els.indexStats.textContent =
+              "Arquivo carregado: " +
+              file.name +
+              " | " +
+              content.length +
+              " caracteres";
+            setStatus(
+              els.generationStatus,
+              "Arquivo carregado. Clique em Validar e gerar designer_system.html.",
+              "",
+            );
+          } catch (error) {
+            setStatus(els.generationStatus, error.message, "error");
+          }
+        }
+
+        function showManualFallbackPanel(prompt, attempts) {
+          els.manualFallbackPanel.classList.remove("hidden");
+          els.manualPromptText.value = prompt || "";
+          els.providerAttempts.innerHTML = "";
+
+          (attempts || []).forEach(function (item) {
+            const line = document.createElement("li");
+            line.textContent = item;
+            els.providerAttempts.appendChild(line);
+          });
+        }
+
+        function hideManualFallbackPanel() {
+          els.manualFallbackPanel.classList.add("hidden");
+          els.providerAttempts.innerHTML = "";
+        }
+
+        function renderDesignerResult(html, sourceLabel) {
+          state.designerHtml = html;
+          els.resultZone.classList.add("active");
+          els.designerPreview.srcdoc = html;
+          els.resultSource.textContent = "Fonte: " + sourceLabel;
+          els.copyDesignerBtn.classList.remove("hidden");
+          els.downloadDesignerBtn.classList.remove("hidden");
+          setStepComplete(stepEls.step2, true);
+        }
+
+        async function validateAndGenerateDesignerSystem() {
+          const typedUrl = els.siteUrlInput.value.trim();
+          const indexHtmlToUse = els.indexHtmlInput.value.trim();
+          const extractedUrl = extractSiteUrlFromIndexHtml(indexHtmlToUse);
+          const siteUrlToUse =
+            typedUrl || state.siteUrl || loadPersistedSiteUrl() || extractedUrl;
+
+          if (siteUrlToUse && !typedUrl) {
+            els.siteUrlInput.value = siteUrlToUse;
+          }
+
+          if (!siteUrlToUse) {
+            setStatus(
+              els.generationStatus,
+              "Informe uma URL antes de validar e gerar (ou mantenha canonical/og:url no INDEX_HTML).",
+              "warning",
+            );
+            return;
+          }
+
+          if (!indexHtmlToUse) {
+            setStatus(
+              els.generationStatus,
+              "Cole ou envie o INDEX_HTML antes de gerar.",
+              "warning",
+            );
+            return;
+          }
+
+          setBusy(
+            els.validateAndGenerateBtn,
+            true,
+            "Validar e gerar designer_system.html",
+            "Validando e gerando...",
+          );
+          hideManualFallbackPanel();
+
+          try {
+            setStatus(els.generationStatus, "Validando URL...", "");
+            const urlData = await postJson("/api/validate-url", {
+              site_url: siteUrlToUse,
+            });
+            state.siteUrl = urlData.normalized_url;
+            persistSiteUrl(state.siteUrl);
+            els.siteUrlInput.value = state.siteUrl;
+
+            setStatus(els.generationStatus, "Validando INDEX_HTML...", "");
+            const validation = await postJson("/api/validate-index", {
+              index_html: indexHtmlToUse,
+            });
+
+            state.indexHtml = indexHtmlToUse;
+            const count =
+              validation.metadata && validation.metadata.char_count
+                ? validation.metadata.char_count
+                : indexHtmlToUse.length;
+            els.indexStats.textContent =
+              "INDEX_HTML valido com " + count + " caracteres.";
+
+            setStatus(
+              els.generationStatus,
+              "INDEX_HTML valido. Gerando designer_system.html...",
+              "",
+            );
+
+            const data = await postJson("/api/generate-designer-system", {
+              site_url: state.siteUrl,
+              index_html: state.indexHtml,
+            });
+
+            if (data.success) {
+              renderDesignerResult(
+                data.designer_system_html,
+                data.provider + " / " + data.model,
+              );
+              setStatus(
+                els.generationStatus,
+                "designer_system.html gerado com sucesso.",
+                "success",
+              );
+              return;
+            }
+
+            if (data.fallback_required) {
+              showManualFallbackPanel(
+                data.manual_fallback_prompt,
+                data.provider_attempts,
+              );
+              setStatus(
+                els.generationStatus,
+                "Provedores indisponiveis agora. Use o fallback manual para continuar sem bloqueio.",
+                "warning",
+              );
+              setStepComplete(stepEls.step2, false);
+              return;
+            }
+
+            setStatus(
+              els.generationStatus,
+              "Falha inesperada na geracao.",
+              "error",
+            );
+            setStepComplete(stepEls.step2, false);
+          } catch (error) {
+            setStatus(els.generationStatus, error.message, "error");
+            setStepComplete(stepEls.step2, false);
+          } finally {
+            setBusy(
+              els.validateAndGenerateBtn,
+              false,
+              "Validar e gerar designer_system.html",
+              "Validando e gerando...",
+            );
+          }
+        }
+
+        async function applyManualResult() {
+          const manualHtml = els.manualResultInput.value.trim();
+          if (!manualHtml) {
+            setStatus(
+              els.generationStatus,
+              "Cole o resultado manual antes de aplicar.",
+              "warning",
+            );
+            return;
+          }
+
+          const lower = manualHtml.toLowerCase();
+          if (!lower.includes("<html") && !lower.includes("<!doctype html")) {
+            setStatus(
+              els.generationStatus,
+              "O conteudo manual nao parece um HTML completo.",
+              "error",
+            );
+            return;
+          }
+
+          renderDesignerResult(manualHtml, "fallback manual");
+          setStatus(
+            els.generationStatus,
+            "Resultado manual aplicado com sucesso.",
+            "success",
+          );
+        }
+
+        async function copyDesignerHtml() {
+          if (!state.designerHtml) {
+            setStatus(
+              els.generationStatus,
+              "Nao ha HTML gerado para copiar.",
+              "warning",
+            );
+            return;
+          }
+
+          try {
+            await copyToClipboard(state.designerHtml);
+            setStatus(
+              els.generationStatus,
+              "designer_system.html copiado para a area de transferencia.",
+              "success",
+            );
+          } catch (copyError) {
+            setStatus(
+              els.generationStatus,
+              "Falha ao copiar: " + copyError.message,
+              "error",
+            );
+          }
+        }
+
+        function downloadDesignerHtml() {
+          if (!state.designerHtml) {
+            setStatus(
+              els.generationStatus,
+              "Nao ha HTML gerado para baixar.",
+              "warning",
+            );
+            return;
+          }
+
+          const blob = new Blob([state.designerHtml], {
+            type: "text/html;charset=utf-8",
+          });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = "designer_system.html";
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          URL.revokeObjectURL(url);
+          setStatus(
+            els.generationStatus,
+            "Download de designer_system.html iniciado.",
+            "success",
+          );
+        }
+
+        async function copyManualPrompt() {
+          const prompt = els.manualPromptText.value.trim();
+          if (!prompt) {
+            setStatus(
+              els.generationStatus,
+              "Nao existe prompt de fallback para copiar.",
+              "warning",
+            );
+            return;
+          }
+
+          try {
+            await copyToClipboard(prompt);
+            setStatus(
+              els.generationStatus,
+              "Prompt de fallback copiado.",
+              "success",
+            );
+          } catch (copyError) {
+            setStatus(
+              els.generationStatus,
+              "Falha ao copiar prompt: " + copyError.message,
+              "error",
+            );
+          }
+        }
+
+        function bindEvents() {
+          els.processUrlBtn.addEventListener("click", function (event) {
+            event.preventDefault();
+            validateUrlAndStartDownload();
+          });
+          els.indexFileInput.addEventListener("change", onIndexFileSelected);
+          els.validateAndGenerateBtn.addEventListener(
+            "click",
+            function (event) {
+              event.preventDefault();
+              validateAndGenerateDesignerSystem();
+            },
+          );
+          els.applyManualResultBtn.addEventListener("click", applyManualResult);
+          els.copyDesignerBtn.addEventListener("click", copyDesignerHtml);
+          els.downloadDesignerBtn.addEventListener(
+            "click",
+            downloadDesignerHtml,
+          );
+          els.copyManualPromptBtn.addEventListener("click", copyManualPrompt);
+
+          els.siteUrlInput.addEventListener("keydown", function (event) {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              validateUrlAndStartDownload();
+            }
+          });
+        }
+
+        bindEvents();
+        appendLog("Logs aguardando inicio do download...");
+      })();
+    </script>
+  </body>
+</html>
