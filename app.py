@@ -12,7 +12,7 @@ from urllib.parse import urlparse, urlunparse
 import requests
 from bs4 import BeautifulSoup, NavigableString
 from dotenv import load_dotenv
-from flask import Flask, Response, jsonify, render_template, request, send_file
+from flask import Flask, Response, jsonify, render_template, request, send_file, send_from_directory
 from werkzeug.exceptions import RequestEntityTooLarge
 
 from downloader import WebsiteDownloader, get_site_name, zip_directory
@@ -1228,6 +1228,16 @@ def handle_request_too_large(_error):
 @app.route("/", methods=["GET"])
 def index():
     return render_template("index.html")
+
+
+@app.route("/css/<path:filename>")
+def serve_css(filename):
+    return send_from_directory(BASE_DIR / "templates" / "css", filename)
+
+
+@app.route("/js/<path:filename>")
+def serve_js(filename):
+    return send_from_directory(BASE_DIR / "templates" / "js", filename)
 
 
 @app.route("/api/validate-url", methods=["POST"])
