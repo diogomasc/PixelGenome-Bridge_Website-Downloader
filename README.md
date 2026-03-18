@@ -1,100 +1,76 @@
-# LayoutGenome Bridge
+# PixelGenome Bridge (Local/Docker)
 
-**LayoutGenome Bridge** é a principal camada de operação da startup **PixelGenome**. Nossa solução atua como um Extrator Inteligente de Design Systems. Trata-se de uma aplicação full-stack (SPA + backend Python/Flask) projetada para alimentar IAs de código (como Cursor, Windsurf e Lovable, além de ferramentas de low-code/no-code) com os melhores padrões de interface de sites reais.
+O PixelGenome Bridge é uma ferramenta técnica (Terminal) para extrair o DNA visual de websites e gerar Design Systems otimizados para IA. Esta ferramenta foi projetada para rodar em ambiente local ou via Docker.
 
----
+## Funcionalidades Principais
 
-## Fluxo Funcional (SPA)
-
-1. **Passo 1:** Informe a URL do site de referência.
-2. **Passo 2:** O backend baixa o site (HTML + assets) e gera um arquivo ZIP para você.
-3. **Passo 3:** Você anexa o `index.html` recém-baixado de volta na ferramenta.
-4. **Passo 4:** O sistema gera o arquivo final `designer_system.html` usando uma IA gratuita, centralizando cores, fontes e propriedades de motion.
-
-> _Nota:_ Se os provedores de IA estiverem indisponíveis, o backend aplica um fallback local automático (heurístico). Se até o fallback falhar, a interface exibe um fallback manual com um prompt completo pronto para copiar e usar em qualquer chat de IA.
+1.  **Extração de Ativos**: Valida uma URL e baixa um pacote ZIP contendo a estrutura do site (HTML/CSS/JS).
+2.  **Geração de Design System**: Processa o `index.html` extraído para criar um genoma visual pronto para ser consumido por IAs.
+3.  **Fallback Manual**: Caso as chaves de IA automáticas falhem ou não estejam configuradas, a ferramenta gera um prompt pronto para ser usado em qualquer IA da sua escolha.
 
 ---
 
-## Endpoints Backend
+## 🚀 Como Rodar Localmente (Python)
 
-**Arquitetura de Extração:**
+### Requisitos
+- Python 3.12+
+- Playwright (Chromium)
 
-- `POST /api/validate-url`
-- `POST /api/download-site`
-- `GET /api/download-zip/<job_id>`
-- `POST /api/validate-index`
-- `POST /api/generate-designer-system`
-
-**Endpoints Auxiliares e Webhooks:**
-
-- `GET /api/download-events/<job_id>` _(SSE para streaming de logs)_
-- `GET /api/download-status/<job_id>`
-- `GET /api/designer-system/<output_id>/preview`
-- `GET /api/designer-system/<output_id>/download`
-
----
-
-## Como Rodar Localmente (Setup)
-
-Você pode executar o projeto usando instâncias locais com o Virtual Environment do Python.
-
-### 1) Configurar Variáveis de Ambiente
-
-Crie uma cópia do arquivo `.env.example` renomeando para `.env` e preencha as chaves:
-
-- `OPENROUTER_API_KEY`
-- `GOOGLE_AI_STUDIO_API_KEY`
-- `OPENAI_API_KEY` _(opcional)_
-
-_(Apenas preenchendo a chave do OpenRouter ou Google AI Studio o fluxo principal já funciona perfeitamente)._
-
-### 2) Instalar Dependências (Ambiente Virtual)
-
-Abra o seu terminal na pasta `backend` e execute:
-
+### 1. Preparar Ambiente
 ```bash
-# 1. Crie o ambiente virtual
 python -m venv venv
-
-# 2. Ative o ambiente virtual
-.\venv\Scripts\activate      # No Windows
-source venv/bin/activate    # No Linux/macOS
-
-# 3. Instale os pacotes básicos e o Playwright
+source venv/bin/activate  # No Windows: venv\Scripts\activate
 pip install -r requirements.txt
 playwright install chromium
 ```
 
-### 3) Executar a Aplicação
+### 2. Configurar Chaves de IA
+Renomeie o arquivo `.env.example` para `.env` e preencha as chaves:
+- `OPENROUTER_API_KEY`: Obtenha em [openrouter.ai](https://openrouter.ai/)
+- `GOOGLE_AI_STUDIO_API_KEY`: Obtenha no [Google AI Studio](https://aistudio.google.com/)
 
+### 3. Iniciar o App
 ```bash
 python app.py
 ```
-
-Acesse a ferramenta em seu navegador através do endereço: **`http://localhost:5001`**.
-
----
-
-### Executar via Docker (Opcional)
-
-Caso prefira isolar o ambiente localmente sem instalar o Python ou dependências na sua máquina:
-
-1. **Construa a imagem da aplicação:**
-
-   ```bash
-   docker build -t layoutgenome-bridge .
-   ```
-
-2. **Execute o container:**
-   ```bash
-   docker run -p 5001:5001 --env-file .env layoutgenome-bridge
-   ```
-   _A aplicação subirá na mesma porta, acesse `http://localhost:5001`._
+Acesse: `http://localhost:5001`
 
 ---
 
-## Conheça Mais
+## 🐳 Como Rodar via Docker
 
-Existe uma landing page explicando melhor sobre a visão completa do projeto, a proposta de valor para freelancers e estúdios em:
+### 1. Criar Imagem
+```bash
+docker build -t pixelgenome-bridge .
+```
 
-**[https://diogomasc.github.io/LayoutGenome/](https://diogomasc.github.io/LayoutGenome/)**
+### 2. Rodar Container
+```bash
+docker run -p 5001:5001 --env-file .env pixelgenome-bridge
+```
+
+---
+
+## 🧬 Testando o "Genoma" Manualmente
+
+Os resultados de geração variam dependendo do modelo de IA utilizado. Se você deseja testar variações ou não possui chaves de API:
+
+1.  No **Passo 1** do App, faça o download do ZIP e extraia o arquivo `index.html`.
+2.  No **Passo 2**, se a extração automática falhar ou se você preferir testar manualmente, a ferramenta exibirá o **Módulo de Backup (IA Offline)**.
+3.  Copie o **Prompt** gerado.
+4.  Abra sua IA de preferência (ChatGPT-4, Claude 3.5 Sonnet, Gemini Pro, etc).
+5.  Envie o conteúdo do `index.html` baixado juntamente com o prompt copiado.
+6.  Cole o resultado retornado pela IA no campo "Resultado Manual" do app para visualizar o preview.
+
+---
+
+## Estrutura do Backend
+```
+.
+├── app.py            # Servidor Flask e rotas
+├── downloader.py     # Lógica de extração com Playwright
+├── templates/        # Interface do Bridge
+├── static/           # Arquivos estáticos
+├── downloads/        # Pasta temporária de extrações
+└── generated/        # Pasta temporária de resultados
+```

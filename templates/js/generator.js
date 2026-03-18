@@ -132,9 +132,17 @@ export const copyDesignerHtml = async () => {
     setStatus(els.generationStatus, "Nao ha HTML para copiar.", "warning");
     return;
   }
+  const btn = els.copyDesignerBtn;
+  const originalText = btn.textContent;
   try {
     await copyToClipboard(state.designerHtml);
     setStatus(els.generationStatus, "Copiado para a área de transferência!", "success");
+    btn.textContent = "Copiado! ✅";
+    btn.classList.add("btn-success-feedback");
+    setTimeout(() => {
+      btn.textContent = originalText;
+      btn.classList.remove("btn-success-feedback");
+    }, 2000);
   } catch (e) {
     setStatus(els.generationStatus, "Erro ao copiar: " + e.message, "error");
   }
@@ -163,9 +171,17 @@ export const copyManualPrompt = async () => {
     setStatus(els.generationStatus, "Nao existe prompt.", "warning");
     return;
   }
+  const btn = els.copyManualPromptBtn;
+  const originalText = btn.textContent;
   try {
     await copyToClipboard(prompt);
     setStatus(els.generationStatus, "Prompt copiado.", "success");
+    btn.textContent = "Prompt Copiado! ✅";
+    btn.classList.add("btn-success-feedback");
+    setTimeout(() => {
+      btn.textContent = originalText;
+      btn.classList.remove("btn-success-feedback");
+    }, 2000);
   } catch (e) {
     setStatus(els.generationStatus, "Erro ao copiar: " + e.message, "error");
   }

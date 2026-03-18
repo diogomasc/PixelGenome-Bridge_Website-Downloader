@@ -58,7 +58,7 @@ store_lock = threading.Lock()
 
 DESIGNER_SYSTEM_INSTRUCTION = """You are a Design System Showcase Builder.
 
-You are given SITE_URL and INDEX_HTML.
+You are given INDEX_HTML.
 
 Your task is to create one new intermediate HTML file that acts as a living design
 
@@ -1117,18 +1117,8 @@ def _generate_designer_system(site_url, index_html):
         except Exception as exc:
             attempts.append(f"{provider_name}: {exc}")
 
-    local_html = _build_local_designer_system(site_url, index_html)
-    if local_html:
-        attempts.append("local_fallback: heuristica aplicada sem provider externo")
-        return {
-            "success": True,
-            "provider": "local_fallback",
-            "model": "heuristic-v1",
-            "designer_system_html": local_html,
-            "attempts": attempts,
-            "fallback_mode": "automatic_local",
-        }
-
+    # Removido local_fallback automatico para garantir que o usuario de fato use uma IA (auto ou manual)
+    # conforme solicitado para evitar confusoes com o "genoma" heuristico.
     return {
         "success": False,
         "attempts": attempts,
