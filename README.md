@@ -1,126 +1,100 @@
 # LayoutGenome Bridge
 
-Aplicacao full-stack (SPA + backend Python/Flask) para:
+**LayoutGenome Bridge** é a principal camada de operação da startup **PixelGenome**. Nossa solução atua como um Extrator Inteligente de Design Systems. Trata-se de uma aplicação full-stack (SPA + backend Python/Flask) projetada para alimentar IAs de código (como Cursor, Windsurf e Lovable, além de ferramentas de low-code/no-code) com os melhores padrões de interface de sites reais.
 
-1. Validar a URL de referencia.
-2. Baixar o site e gerar ZIP para o usuario.
-3. Receber e validar INDEX_HTML.
-4. Gerar designer_system.html com IA gratuita.
-5. Entregar preview + copiar + baixar o HTML final.
+---
 
-## Fluxo funcional (SPA)
+## Fluxo Funcional (SPA)
 
-1. Passo 1: Informe a URL do site de referencia.
-2. Passo 2: Baixe o ZIP gerado.
-3. Passo 3: Envie o index.html.
-4. Passo 4: Gerar designer_system.html com IA gratuita.
+1. **Passo 1:** Informe a URL do site de referência.
+2. **Passo 2:** O backend baixa o site (HTML + assets) e gera um arquivo ZIP para você.
+3. **Passo 3:** Você anexa o `index.html` recém-baixado de volta na ferramenta.
+4. **Passo 4:** O sistema gera o arquivo final `designer_system.html` usando uma IA gratuita, centralizando cores, fontes e propriedades de motion.
 
-Se os providers de IA estiverem indisponiveis, o backend aplica fallback local automatico (heuristico) para seguir no mesmo clique. Se ate esse fallback falhar, a interface exibe fallback manual com prompt pronto para copiar.
+> _Nota:_ Se os provedores de IA estiverem indisponíveis, o backend aplica um fallback local automático (heurístico). Se até o fallback falhar, a interface exibe um fallback manual com um prompt completo pronto para copiar e usar em qualquer chat de IA.
 
-## Endpoints backend
+---
 
-Implementados conforme solicitado:
+## Endpoints Backend
 
-- POST /api/validate-url
-- POST /api/download-site
-- GET /api/download-zip/<job_id>
-- POST /api/validate-index
-- POST /api/generate-designer-system
+**Arquitetura de Extração:**
 
-Endpoints auxiliares:
+- `POST /api/validate-url`
+- `POST /api/download-site`
+- `GET /api/download-zip/<job_id>`
+- `POST /api/validate-index`
+- `POST /api/generate-designer-system`
 
-- GET /api/download-events/<job_id> (SSE para logs)
-- GET /api/download-status/<job_id>
-- GET /api/designer-system/<output_id>/preview
-- GET /api/designer-system/<output_id>/download
+**Endpoints Auxiliares e Webhooks:**
 
-## Regras tecnicas aplicadas
+- `GET /api/download-events/<job_id>` _(SSE para streaming de logs)_
+- `GET /api/download-status/<job_id>`
+- `GET /api/designer-system/<output_id>/preview`
+- `GET /api/designer-system/<output_id>/download`
 
-- Validacao de URL com esquema http/https e formato.
-- Validacao de INDEX_HTML (nao vazio e com marcador HTML valido).
-- Limites de tamanho de entrada e tratamento de erro JSON.
-- Protecao contra path traversal usando IDs UUID e caminhos internos controlados.
-- Limpeza automatica de artefatos temporarios.
-- Fallback local automatico quando IA indisponivel.
-- Fallback manual funcional como ultima camada.
+---
 
-## IA gratuita e fallback
+## Como Rodar Localmente (Setup)
 
-Ordem de tentativas no backend:
+Você pode executar o projeto usando instâncias locais com o Virtual Environment do Python.
 
-1. OpenRouter (free-tier como caminho principal)
-2. Google AI Studio (free-tier)
-3. OpenAI (fallback adicional opcional)
+### 1) Configurar Variáveis de Ambiente
 
-Se OpenRouter/Google/OpenAI falharem, o backend gera designer_system.html localmente (heuristica) e retorna sucesso.
+Crie uma cópia do arquivo `.env.example` renomeando para `.env` e preencha as chaves:
 
-Se esse fallback local falhar por qualquer motivo, a API retorna prompt completo para uso manual em provider externo e a SPA permite colar o resultado para preview/copia/download.
+- `OPENROUTER_API_KEY`
+- `GOOGLE_AI_STUDIO_API_KEY`
+- `OPENAI_API_KEY` _(opcional)_
 
-## Setup local
+_(Apenas preenchendo a chave do OpenRouter ou Google AI Studio o fluxo principal já funciona perfeitamente)._
 
-### Requisitos
+### 2) Instalar Dependências (Ambiente Virtual)
 
-- Python 3.12+
-- Pip ou uv
-- Playwright Chromium
-
-### 1) Configurar variaveis de ambiente
-
-Copie .env.example para .env e preencha as chaves que desejar:
-
-- OPENROUTER_API_KEY
-- GOOGLE_AI_STUDIO_API_KEY
-- OPENAI_API_KEY (opcional)
-
-Com apenas OpenRouter ou Google preenchido, o fluxo principal ja funciona.
-
-### 2) Instalar dependencias
-
-Com pip:
+Abra o seu terminal na pasta `backend` e execute:
 
 ```bash
+# 1. Crie o ambiente virtual
+python -m venv venv
+
+# 2. Ative o ambiente virtual
+.\venv\Scripts\activate      # No Windows
+source venv/bin/activate    # No Linux/macOS
+
+# 3. Instale os pacotes básicos e o Playwright
 pip install -r requirements.txt
 playwright install chromium
 ```
 
-Com uv:
-
-```bash
-uv sync
-uv run playwright install chromium
-```
-
-### 3) Executar
-
-Com pip:
+### 3) Executar a Aplicação
 
 ```bash
 python app.py
 ```
 
-Com uv:
+Acesse a ferramenta em seu navegador através do endereço: **`http://localhost:5001`**.
 
-```bash
-uv run python app.py
-```
+---
 
-Aplicacao: http://localhost:5001
+### Executar via Docker (Opcional)
 
-## Estrutura principal
+Caso prefira isolar o ambiente localmente sem instalar o Python ou dependências na sua máquina:
 
-```
-.
-├── app.py
-├── downloader.py
-├── templates/
-│   └── index.html
-├── requirements.txt
-├── .env.example
-├── downloads/        # temporario
-└── generated/        # temporario
-```
+1. **Construa a imagem da aplicação:**
 
-## Deploy
+   ```bash
+   docker build -t layoutgenome-bridge .
+   ```
 
-Arquivos de deploy existentes continuam validos (Dockerfile, render.yaml, Procfile).
-Consulte DEPLOY.md e RAILWAY_DEPLOY.md para detalhes de plataforma.
+2. **Execute o container:**
+   ```bash
+   docker run -p 5001:5001 --env-file .env layoutgenome-bridge
+   ```
+   _A aplicação subirá na mesma porta, acesse `http://localhost:5001`._
+
+---
+
+## Conheça Mais
+
+Existe uma landing page explicando melhor sobre a visão completa do projeto, a proposta de valor para freelancers e estúdios em:
+
+**[https://diogomasc.github.io/LayoutGenome/](https://diogomasc.github.io/LayoutGenome/)**
