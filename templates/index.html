@@ -72,12 +72,21 @@
           sua IA.
         </p>
         <div class="field-stack">
-          <input
-            class="input"
-            id="indexFileInput"
-            type="file"
-            accept=".html,text/html"
-          />
+          <div class="field-row">
+            <input
+              class="input file-input"
+              id="indexFileInput"
+              type="file"
+              accept=".html,text/html"
+            />
+            <button
+              class="btn btn-primary"
+              id="validateAndGenerateBtn"
+              type="button"
+            >
+              Gerar Design System
+            </button>
+          </div>
           <textarea
             class="textarea"
             id="indexHtmlInput"
@@ -85,13 +94,6 @@
           ></textarea>
         </div>
         <div class="actions-row">
-          <button
-            class="btn btn-primary"
-            id="validateAndGenerateBtn"
-            type="button"
-          >
-            Gerar Design System
-          </button>
           <button
             class="btn btn-ghost hidden"
             id="copyDesignerBtn"
