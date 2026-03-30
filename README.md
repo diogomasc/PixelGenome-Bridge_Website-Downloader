@@ -2,6 +2,9 @@
 
 O PixelGenome Bridge é uma ferramenta técnica (Terminal) para extrair o DNA visual de websites e gerar Design Systems otimizados para IA. Esta ferramenta foi projetada para rodar em ambiente local ou via Docker.
 
+<img width="1920" height="974" alt="image" src="https://github.com/user-attachments/assets/12eefb1c-e158-4d1a-a982-1d6741e4e4d4" />
+
+
 ## Funcionalidades Principais
 
 1.  **Extração de Ativos**: Valida uma URL e baixa um pacote ZIP contendo a estrutura do site (HTML/CSS/JS).
